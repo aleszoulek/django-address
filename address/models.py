@@ -40,6 +40,10 @@ def _to_python(value):
     if not raw:
         return None
 
+    # State defaults to Country. Google API doesn't return state for some areas
+    if not state and country:
+        state = country
+
     # If we have an inconsistent set of value bail out now.
     if (country or state or locality) and not (country and state and locality):
         raise InconsistentDictError
