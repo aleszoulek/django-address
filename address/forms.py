@@ -1,6 +1,8 @@
 from django import forms
 # from uni_form.helpers import *
 from django.utils.safestring import mark_safe
+from django.conf import settings
+
 from .models import Address, to_python
 
 import logging
@@ -15,6 +17,10 @@ if sys.version > '3':
 
 __all__ = ['AddressWidget', 'AddressField']
 
+GOOGLE_JS_URL = 'https://maps.googleapis.com/maps/api/js?libraries=places&sensor=false'
+if hasattr(settings, 'ADDRESS_GOOGLE_API_KEY'):
+    GOOGLE_JS_URL = "{}&key={}".format(GOOGLE_JS_URL, ADDRESS_GOOGLE_API_KEY)
+
 class AddressWidget(forms.TextInput):
     components = [('country', 'country'), ('country_code', 'country_short'),
                   ('locality', 'locality'), ('postal_code', 'postal_code'),
@@ -26,7 +32,7 @@ class AddressWidget(forms.TextInput):
 
     class Media:
         js = (
-              'https://maps.googleapis.com/maps/api/js?libraries=places&sensor=false',
+              GOOGLE_JS_URL,
               'js/jquery.geocomplete.min.js',
               'address/js/address.js')
 
