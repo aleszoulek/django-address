@@ -20,6 +20,8 @@ __all__ = ['AddressWidget', 'AddressField']
 GOOGLE_JS_URL = 'https://maps.googleapis.com/maps/api/js?libraries=places&sensor=false'
 if hasattr(settings, 'ADDRESS_GOOGLE_API_KEY'):
     GOOGLE_JS_URL = "{}&key={}".format(GOOGLE_JS_URL, settings.ADDRESS_GOOGLE_API_KEY)
+if hasattr(settings, 'ADDRESS_GOOGLE_LANGUAGE'):
+    GOOGLE_JS_URL = "{}&language={}".format(GOOGLE_JS_URL, settings.ADDRESS_GOOGLE_LANGUAGE)
 
 class AddressWidget(forms.TextInput):
     components = [('country', 'country'), ('country_code', 'country_short'),
