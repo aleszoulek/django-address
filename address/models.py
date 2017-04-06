@@ -317,4 +317,4 @@ class AddressJsonField(jsonfield.JSONField):
         from .forms import AddressJsonField as AddressFormJsonField
         defaults = dict(form_class=AddressFormJsonField)
         defaults.update(kwargs)
-        return super(AddressJsonField, self).formfield(**defaults)
+        return super(jsonfield.JSONField, self).formfield(**defaults)
