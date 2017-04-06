@@ -1,3 +1,6 @@
+import sys
+import logging
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models.fields.related import ForeignObject
@@ -6,12 +9,11 @@ try:
 except ImportError:
     from django.db.models.fields.related import ReverseSingleRelatedObjectDescriptor as ForwardManyToOneDescriptor
 from django.utils.encoding import python_2_unicode_compatible
+import jsonfield
 
-import logging
 logger = logging.getLogger(__name__)
 
 # Python 3 fixes.
-import sys
 if sys.version > '3':
     long = int
     basestring = (str, bytes)
@@ -19,8 +21,10 @@ if sys.version > '3':
 
 __all__ = ['Country', 'State', 'Locality', 'Address', 'AddressField']
 
+
 class InconsistentDictError(Exception):
     pass
+
 
 def _to_python(value):
     raw = value.get('raw', '')
@@ -55,7 +59,7 @@ def _to_python(value):
         if country:
             if len(country_code) > Country._meta.get_field('code').max_length:
                 if country_code != country:
-                    raise ValueError('Invalid country code (too long): %s'%country_code)
+                    raise ValueError('Invalid country code (too long): %s' % country_code)
                 country_code = ''
             country_obj = Country.objects.create(name=country, code=country_code)
         else:
@@ -68,7 +72,7 @@ def _to_python(value):
         if state:
             if len(state_code) > State._meta.get_field('code').max_length:
                 if state_code != state:
-                    raise ValueError('Invalid state code (too long): %s'%state_code)
+                    raise ValueError('Invalid state code (too long): %s' % state_code)
                 state_code = ''
             state_obj = State.objects.create(name=state, code=state_code, country=country_obj)
         else:
@@ -306,3 +310,11 @@ class AddressField(models.ForeignKey):
         defaults = dict(form_class=AddressFormField)
         defaults.update(kwargs)
         return super(AddressField, self).formfield(**defaults)
+
+
+class AddressJsonField(jsonfield.JSONField):
+    def formfield(self, **kwargs):
+        from .forms import AddressJsonField as AddressFormJsonField
+        defaults = dict(form_class=AddressFormJsonField)
+        defaults.update(kwargs)
+        return super(AddressJsonField, self).formfield(**defaults)

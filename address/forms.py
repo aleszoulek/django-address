@@ -65,11 +65,11 @@ class AddressWidget(forms.TextInput):
         elems = [super(AddressWidget, self).render(name, ad.get('formatted', None), attrs, **kwargs)]
 
         # Now add the hidden fields.
-        elems.append('<div id="%s_components">'%name)
+        elems.append('<div id="%s_components">' % name)
         for com in self.components:
-            elems.append('<input type="hidden" name="%s_%s" data-geo="%s" value="%s" />'%(
-                name, com[0], com[1], ad.get(com[0], ''))
-            )
+            elems.append('<input type="hidden" name="%s_%s" data-geo="%s" value="%s" />' % (
+                name, com[0], com[1], ad.get(com[0], '')
+            ))
         elems.append('</div>')
 
         return mark_safe(unicode('\n'.join(elems)))
@@ -81,6 +81,7 @@ class AddressWidget(forms.TextInput):
         ad = dict([(c[0], data.get(name + '_' + c[0], '')) for c in self.components])
         ad['raw'] = raw
         return ad
+
 
 class AddressField(forms.ModelChoiceField):
     widget = AddressWidget
@@ -108,3 +109,31 @@ class AddressField(forms.ModelChoiceField):
                     value[field] = None
 
         return to_python(value)
+
+
+class AddressJsonWidget(AddressWidget):
+    pass
+
+
+class AddressJsonField(forms.CharField):
+    widget = AddressJsonWidget
+
+    def to_python(self, value):
+
+        # Treat `None`s and empty strings as empty.
+        if value is None or value == '':
+            return None
+
+        # Check for garbage in the lat/lng components.
+        for field in ['latitude', 'longitude']:
+            if field in value:
+                if value[field]:
+                    try:
+                        value[field] = float(value[field])
+                    except:
+                        raise forms.ValidationError('Invalid value for %(field)s', code='invalid',
+                                                    params={'field': field})
+                else:
+                    value[field] = None
+
+        return value
